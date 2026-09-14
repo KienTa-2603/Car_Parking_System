@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Parking — Zone-Based Management</title>
+<style>
+:root{
+  --bg:#0f141b; --card:#1a2230; --card2:#222d42; --line:#2c3a55;
+  --green:#22c55e; --green-dim:rgba(34,197,94,.15);
+  --red:#ef4444; --red-dim:rgba(239,68,68,.15);
+  --amber:#f59e0b; --blue:#3b82f6; --text:#e8eef7; --muted:#8b98b0;
+  --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Segoe UI",system-ui,Roboto,Arial,sans-serif;background:radial-gradient(1200px 600px at 20% -10%,#1d2a44 0%,var(--bg) 55%);color:var(--text);min-height:100vh;padding:24px}
+header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+h1{font-size:22px;letter-spacing:.3px}
+h1 span{color:var(--green)}
+.sub{color:var(--muted);font-size:13px;margin-top:4px}
+.badges{display:flex;gap:10px;flex-wrap:wrap}
+.badge{background:var(--card);border:1px solid var(--line);padding:8px 14px;border-radius:999px;font-size:13px;display:flex;align-items:center;gap:8px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+.dot.off{background:var(--red);box-shadow:0 0 8px var(--red)}
+.layout{display:grid;grid-template-columns:1.5fr 1fr;gap:20px}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+.card{background:linear-gradient(180deg,var(--card),#151c29);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.card h2{font-size:15px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:14px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+@media(max-width:600px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center}
+.stat b{font-size:26px;display:block}
+.stat small{color:var(--muted)}
+.lot{background:#0b1018;border:1px dashed var(--line);border-radius:var(--radius);padding:22px}
+.road{text-align:center;color:var(--muted);font-size:12px;letter-spacing:3px;margin:14px 0;padding:8px;border-top:2px dashed #33415e;border-bottom:2px dashed #33415e}
+.row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.slot{height:130px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;user-select:none;font-weight:700;font-size:18px;border:2px solid transparent;transition:.2s;position:relative}
+.slot small{font-weight:400;font-size:12px;opacity:.85}
+.slot .car{font-size:32px;line-height:1}
+.slot.free{background:var(--green-dim);border-color:var(--green);color:#bbf7d0}
+.slot.busy{background:var(--red-dim);border-color:var(--red);color:#fecaca}
+.slot:hover{transform:translateY(-2px)}
+.slot.selected{outline:3px solid var(--blue);outline-offset:2px}
+.slot .timer{font-size:11px;font-family:monospace;opacity:.8}
+.slot .datetime{font-size:11px;font-weight:600;background:rgba(0,0,0,.35);padding:3px 8px;border-radius:99px;font-family:monospace}
+.slot{height:150px}
+.progress{height:8px;background:#0b1018;border-radius:99px;overflow:hidden;margin-top:10px}
+.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--amber),var(--red));width:0%;transition:.3s}
+.detail{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:14px;font-size:14px;line-height:1.9}
+.detail input{background:#0b1018;border:1px solid var(--line);color:var(--text);border-radius:8px;padding:8px 10px;width:100%;margin-top:6px}
+.btn{border:0;border-radius:10px;padding:12px 16px;font-weight:700;cursor:pointer;font-size:14px;width:100%;margin-top:10px;transition:.15s}
+.btn-pay{background:linear-gradient(135deg,#22c55e,#16a34a);color:#04140a}
+.btn-pay:hover{filter:brightness(1.1)}
+.btn-barrier{background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff}
+.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--text)}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+th{color:var(--muted);text-align:left;padding:8px;border-bottom:1px solid var(--line);font-weight:600}
+td{padding:8px;border-bottom:1px solid rgba(255,255,255,.06)}
+.pill{padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700}
+.ok{background:var(--green-dim);color:#4ade80}
+.wait{background:rgba(245,158,11,.15);color:#fbbf24}
+.barrier{display:flex;align-items:center;gap:12px;background:#0b1018;border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:12px}
+.bar{flex:1;height:12px;border-radius:99px;background:linear-gradient(90deg,var(--red) 50%,#fff 50%);background-size:24px 100%;transition:.3s}
+.bar.open{background:linear-gradient(90deg,var(--green) 50%,#fff 50%);background-size:24px 100%}
+.log{max-height:160px;overflow:auto;margin-top:10px;font-size:12px;font-family:monospace;color:var(--muted);background:#0b1018;border-radius:8px;padding:10px;line-height:1.8}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
+.modal.show{display:flex}
+.qr-box{background:#fff;color:#111;border-radius:16px;padding:28px;text-align:center;max-width:340px;width:100%}
+.qr{width:220px;height:220px;margin:12px auto;background:repeating-conic-gradient(#111 0 25%,#fff 0 50%) 0 0/22px 22px;border:8px solid #111;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px}
+.qr span{background:#fff;padding:4px 8px;border-radius:6px;font-weight:800}
+.hint{font-size:12px;color:var(--muted);margin-top:12px;line-height:1.6}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>🅿️ SMART PARKING <span>— Zone A</span></h1>
+    <div class="sub">QMC5883L + ATmega328P + nRF24L01+ → ESP32 Gateway → Local Server + VietQR</div>
+  </div>
+  <div class="badges">
+    <div class="badge"><span class="dot" id="esp-dot"></span><span id="esp-text">ESP32: Online (mock)</span></div>
+    <div class="badge">🚧 Barrier: <b id="barrier-badge" style="margin-left:6px">ĐÓNG</b></div>
+  </div>
+</header>
+
+<div class="stats">
+  <div class="stat"><b id="s-free" style="color:var(--green)">6</b><small>Ô trống</small></div>
+  <div class="stat"><b id="s-busy" style="color:var(--red)">0</b><small>Đang đỗ</small></div>
+  <div class="stat"><b id="s-total">0</b><small>Lượt thanh toán</small></div>
+  <div class="stat"><b id="s-money">0₫</b><small>Doanh thu</small></div>
+</div>
+
+<div class="layout">
+  <div class="card">
+    <h2>Sơ đồ bãi — click ô để giả lập sensor (thay cho QMC5883L thật)</h2>
+    <div class="lot">
+      <div class="row" id="row-top"></div>
+      <div class="road">⇅ &nbsp; LỐI ĐI &nbsp; ⇅</div>
+      <div class="row" id="row-bottom"></div>
+    </div>
+    <div class="progress"><i id="occ-bar"></i></div>
+    <div class="hint">💡 Luồng thật: khách <b>thanh toán trước</b> → barrier mở → xe vào ô → sensor QMC5883L báo có xe. Ở bản test này click vào ô chỉ để <b>giả lập sensor</b>, không liên quan nút thanh toán.</div>
+  </div>
+
+  <div class="card">
+    <h2>Trạm thanh toán & Barrier</h2>
+    <div class="detail">
+      Giả lập sensor: đang test <b id="sel-name">—</b> (click ô trên sơ đồ để đổi trạng thái, thay cho QMC5883L thật)<br>
+      Biển số (sau này thêm camera): <input id="plate" placeholder="VD: 51H-12345">
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-pay" onclick="openPay()">💳 Thanh toán trước & Hiện VietQR</button>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-barrier" onclick="manualBarrier()">🚧 Mở Barrier tay</button>
+        <button class="btn btn-ghost" onclick="resetAll()">Reset</button>
+      </div>
+    </div>
+    <div class="barrier">
+      <span style="font-size:22px">🚧</span>
+      <div class="bar" id="bar-visual"></div>
+      <b id="bar-state">CLOSED</b>
+    </div>
+    <h2 style="margin-top:18px">Lịch sử thanh toán</h2>
+    <table>
+      <thead><tr><th>Loại</th><th>Biển số</th><th>Tiền</th><th>Giờ TT</th><th>Trạng thái</th></tr></thead>
+      <tbody id="pay-body"><tr><td colspan="5" style="color:var(--muted)">Chưa có lượt nào</td></tr></tbody>
+    </table>
+    <h2 style="margin-top:18px">Log hệ thống</h2>
+    <div class="log" id="log"></div>
+  </div>
+</div>
+
+<div class="modal" id="qr-modal">
+  <div class="qr-box">
+    <h3>VietQR — Thanh toán</h3>
+    <p id="qr-info" style="margin-top:6px;font-weight:700"></p>
+    <div class="qr"><span>VietQR<br>100.000₫</span></div>
+    <p style="font-size:13px;color:#555">Quét mã để vào trang thanh toán local.<br>(Bản test — không trừ tiền thật)</p>
+    <input id="qr-amount" type="number" value="10000" style="width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;margin-top:10px">
+    <button class="btn btn-pay" onclick="confirmPay()">✅ Tôi đã thanh toán</button>
+    <button class="btn btn-ghost" style="color:#111;border-color:#ccc" onclick="closePay()">Hủy</button>
+  </div>
+</div>
+
+<script>
+const RATE_PER_HOUR = 10000;
+let slots = [
+  {id:"A1",busy:false,tIn:null},{id:"A2",busy:false,tIn:null},{id:"A3",busy:false,tIn:null},
+  {id:"A4",busy:false,tIn:null},{id:"A5",busy:false,tIn:null},{id:"A6",busy:false,tIn:null}
+];
+let selected = 0, payments = [], revenue = 0, barrierOpen = false;
+
+function log(m){
+  const el = document.getElementById("log");
+  el.innerHTML = `[${new Date().toLocaleTimeString()}] ${m}<br>` + el.innerHTML;
+}
+function fmtTime(t){
+  const d = new Date(t);
+  const p = n => String(n).padStart(2,"0");
+  return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
+function fmtDur(t){
+  let s = Math.floor((Date.now()-t)/1000);
+  const h = Math.floor(s/3600); s %= 3600;
+  const m = Math.floor(s/60); s %= 60;
+  const p = n => String(n).padStart(2,"0");
+  return `${p(h)}:${p(m)}:${p(s)}`;
+}
+function calcFee(t){
+  const hours = (Date.now()-t)/3600000;
+  return Math.max(1, Math.ceil(hours)) * RATE_PER_HOUR;
+}
+function render(){
+  const top = document.getElementById("row-top"), bot = document.getElementById("row-bottom");
+  top.innerHTML = ""; bot.innerHTML = "";
+  slots.forEach((s,i)=>{
+    const d = document.createElement("div");
+    d.className = "slot " + (s.busy ? "busy" : "free") + (i===selected ? " selected" : "");
+    d.innerHTML = `<div>${s.id}</div><div class="car">${s.busy ? "🚗" : "🅿️"}</div><small>${s.busy ? "CÓ XE" : "TRỐNG"}</small>` +
+      (s.busy && s.tIn ? `<div class="datetime">▶ ${fmtTime(s.tIn)}</div><div class="timer">Đã đỗ: ${fmtDur(s.tIn)}</div><div class="timer">~${calcFee(s.tIn).toLocaleString("vi-VN")}₫</div>` : `<div class="timer">--/--/---- --:--:--</div>`);
+    d.onclick = ()=>{ selected=i; toggleSlot(i); };
+    (i<3?top:bot).appendChild(d);
+  });
+  const busy = slots.filter(s=>s.busy).length;
+  document.getElementById("s-free").textContent = 6-busy;
+  document.getElementById("s-busy").textContent = busy;
+  document.getElementById("s-total").textContent = payments.length;
+  document.getElementById("s-money").textContent = revenue.toLocaleString("vi-VN")+"₫";
+  document.getElementById("occ-bar").style.width = (busy/6*100)+"%";
+  document.getElementById("sel-name").textContent = slots[selected].id + (slots[selected].busy?` (có xe từ ${fmtTime(slots[selected].tIn)})`:" (trống — click để giả lập xe vào)");
+}
+function toggleSlot(i){
+  const s = slots[i];
+  s.busy = !s.busy;
+  s.tIn = s.busy ? Date.now() : null;
+  log(`Sensor ${s.id} → ${s.busy?"OCCUPIED (QMC5883L phát hiện từ trường)":"FREE"} — gửi qua nRF24L01+ tới ESP32`);
+  // TODO: sau này thay bằng: fetch POST /api/slot {id, busy} từ ESP32
+  render();
+}
+let paySlot = -1;
+function openPay(){
+  const s = slots[selected];
+  if(s.busy && s.tIn){
+    paySlot = selected;
+    const fee = calcFee(s.tIn);
+    document.getElementById("qr-amount").value = fee;
+    document.getElementById("qr-info").textContent = `Ô ${s.id} — bắt đầu tính giờ: ${fmtTime(s.tIn)} — đã đỗ ${fmtDur(s.tIn)} — tạm tính ${fee.toLocaleString("vi-VN")}₫`;
+    log(`Mở thanh toán ô ${s.id}: vào lúc ${fmtTime(s.tIn)}, tính tiền tới hiện tại`);
+  } else {
+    paySlot = -1;
+    document.getElementById("qr-amount").value = RATE_PER_HOUR;
+    document.getElementById("qr-info").textContent = `Vé vào — ${RATE_PER_HOUR.toLocaleString("vi-VN")}₫/giờ (thanh toán trước khi vào)`;
+  }
+  document.getElementById("qr-modal").classList.add("show");
+}
+function closePay(){ document.getElementById("qr-modal").classList.remove("show"); }
+function confirmPay(){
+  const amount = parseInt(document.getElementById("qr-amount").value)||10000;
+  const plate = document.getElementById("plate").value||"—";
+  if(paySlot >= 0){
+    const s = slots[paySlot];
+    payments.unshift({slot:s.id + " (ra)",plate,amount,ok:true,time:Date.now()});
+    log(`Thanh toán OK: ô ${s.id} | ${plate} | vào ${fmtTime(s.tIn)} → ${amount.toLocaleString("vi-VN")}₫ → mở barrier cho xe RA, giải phóng ô`);
+    s.busy = false; s.tIn = null;
+  } else {
+    payments.unshift({slot:"Vé vào",plate,amount,ok:true,time:Date.now()});
+    log(`Thanh toán OK: ${plate} | ${amount.toLocaleString("vi-VN")}₫ → mở barrier cho xe VÀO`);
+  }
+  revenue += amount;
+  paySlot = -1;
+  closePay();
+  renderTable();
+  render();
+  openBarrier();
+  setTimeout(render, 100);
+}
+function renderTable(){
+  const tb = document.getElementById("pay-body");
+  if(!payments.length) return;
+  tb.innerHTML = payments.map(p=>`<tr><td><b>${p.slot}</b></td><td>${p.plate}</td><td>${p.amount.toLocaleString("vi-VN")}₫</td><td>${fmtTime(p.time)}</td><td><span class="pill ok">Đã TT</span></td></tr>`).join("");
+}
+function openBarrier(){
+  barrierOpen = true;
+  document.getElementById("bar-visual").classList.add("open");
+  document.getElementById("bar-state").textContent = "OPEN";
+  document.getElementById("barrier-badge").textContent = "MỞ";
+  document.getElementById("barrier-badge").style.color = "var(--green)";
+  log("Barrier: MỞ (ESP32 kích relay)");
+  setTimeout(closeBarrier, 5000);
+}
+function closeBarrier(){
+  barrierOpen = false;
+  document.getElementById("bar-visual").classList.remove("open");
+  document.getElementById("bar-state").textContent = "CLOSED";
+  document.getElementById("barrier-badge").textContent = "ĐÓNG";
+  document.getElementById("barrier-badge").style.color = "var(--red)";
+  log("Barrier: ĐÓNG");
+}
+function manualBarrier(){ barrierOpen ? closeBarrier() : openBarrier(); }
+function resetAll(){
+  slots.forEach(s=>{s.busy=false;s.tIn=null});
+  payments=[]; revenue=0;
+  renderTable(); render(); closeBarrier();
+  document.getElementById("pay-body").innerHTML = `<tr><td colspan="5" style="color:var(--muted)">Chưa có lượt nào</td></tr>`;
+  log("Reset hệ thống test");
+}
+setInterval(()=>{ if(slots.some(s=>s.busy)) render(); }, 1000);
+render();
+log("Hệ thống khởi động — chờ dữ liệu từ ESP32 gateway...");
+</script>
+</body>
+</html>

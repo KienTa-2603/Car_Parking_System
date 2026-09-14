@@ -1,10 +1,32 @@
-# ZONE-BASED PARKING MANAGEMENT SYSTEM
-## INTRODUCTION
-Traditional parking facilities largely rely on manual ticket issuance, human-operated barriers, and cash payment, which are slow, error-prone, and difficult to scale. This report presents the design of a Zone-Based Smart Parking Management System that focuses on two core capabilities: real-time, power-efficient slot occupancy monitoring, and cashless payment through dynamic VietQR codes. Each parking slot is equipped with a battery-powered wireless sensor node built around a QMC5883L three-axis magnetometer, which detects the presence of a vehicle by sensing the local distortion of the Earth's magnetic field caused by the vehicle's metal mass. Each node is controlled by a low-power microcontroller (ATmega328P) that remains in deep-sleep mode between periodic readings and communicates slot status to a central ESP32 gateway over an nRF24L01+ 2.4 GHz radio link, transmitting only when a change in occupancy is detected. This event-driven, low-duty-cycle design allows each sensor node to operate for extended periods on small batteries without requiring wired power or continuous network connectivity. The ESP32 gateway forwards slot-status updates to a Local Server, which maintains a real-time occupancy dashboard and, at the point of vehicle exit, calculates the parking fee and generates a dynamic VietQR code for immediate, cashless settlement through any participating bank application. By combining a magnetic-sensing and RF-based occupancy layer with a local, offline-first payment backend, the system offers an affordable and energy-efficient alternative to camera-based or wired sensor approaches, making it particularly suitable for small and medium-sized parking lots.
-## OBJECTIVES
-1.	Design a battery-powered slot-sensor node combining a QMC5883L magnetometer with a low-power microcontroller (ATmega328P) and an nRF24L01+ radio module.
-2.	Implement a duty-cycled firmware routine in which the node remains in deep sleep, wakes periodically to take a single magnetic-field reading, and transmits a status update only when the occupancy state changes.
-3.	Calibrate each sensor node against its installation environment to reliably distinguish an occupied slot from an empty one under real ambient magnetic conditions.
-4.	Develop an ESP32-based gateway that continuously listens for status packets from all sensor nodes and forwards updates to the Local Server.
-5.	Build a Local Server component that maintains real-time slot-occupancy state, calculates parking fees, and generates dynamic VietQR codes for exit payment.
-6.	Evaluate the power consumption of the sensor nodes to confirm the design meets the project's energy-efficiency goals.
+# Smart Parking Management System
+
+A zone-based parking management system using magnetic field sensors, wireless communication, and automated payment processing.
+
+## Overview
+
+This system provides real-time monitoring and management of parking spaces, integrating:
+- Magnetic field detection for vehicle presence
+- Wireless communication for data transmission
+- Automated payment processing via QR codes
+- Barrier control for access management
+
+## Features
+
+### Hardware Components
+- **Magnetic Sensors**: QMC5883L for vehicle detection
+- **Microcontrollers**: ATmega328P (Arduino Pro Mini) for sensor nodes
+- **Wireless Modules**: nRF24L01+ for low-power RF communication
+- **Gateway**: ESP32 for Wi-Fi connectivity and barrier control
+- **Barrier Actuator**: Electromechanical barrier with relay control
+
+### Software Components
+- **Local Server**: Node.js/Express for data processing and payment handling
+- **Web Interface**: Responsive dashboard for real-time monitoring
+- **Payment Integration**: VietQR code generation and processing
+
+### Key Features
+- Real-time parking space status monitoring
+- Automated QR code generation for payment
+- Barrier control based on payment confirmation
+- Parking fee calculation based on occupancy time
+- Sensor-based vehicle presence detection
