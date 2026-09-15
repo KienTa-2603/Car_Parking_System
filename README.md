@@ -16,7 +16,7 @@ This system provides real-time monitoring and management of parking spaces, inte
 - **Magnetic Sensors**: QMC5883L for vehicle detection
 - **Microcontrollers**: ATmega328P (Arduino Pro Mini) for sensor nodes
 - **Wireless Modules**: nRF24L01+ for low-power RF communication
-- **Gateway**: ESP32 for Wi-Fi connectivity and barrier control
+- **Gateway**: ESP32 for Wi‑Fi connectivity and barrier control
 - **Barrier Actuator**: Electromechanical barrier with relay control
 
 ### Software Components
