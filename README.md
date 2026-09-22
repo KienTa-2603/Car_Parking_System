@@ -18,16 +18,6 @@ Hệ thống quản lý bãi đỗ xe thông minh tự động (Smart Parking & 
 
 ```mermaid
 graph TD
-    A[Sensor Node: QMC5883L + ATmega328P] --> B[ESP32 Gateway: RFID + Buzzer + Relay Barrier]
-    B --> C[Python Desktop Application: GUI + Flask Server]
-    C --> D[Camera / OCR Module: License Plate Recognition]
-    C --> E[Local Payment Gateway: QR Code -> Web Confirmation]
-```
-
-## 📊 Sơ Đồ Khối Hệ Thống (System Block Diagram)
-
-```mermaid
-graph TD
     A[Sensor Node: QMC5883L + ATmega328P] -->|nRF24L01+ RF| B[ESP32 Gateway: RFID + Buzzer + Relay Barrier]
     B -->|Serial/COM| C[Python Desktop Application: GUI + Flask Server]
     C --> D[Camera / OCR Module: License Plate Recognition]
