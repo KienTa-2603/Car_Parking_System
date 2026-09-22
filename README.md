@@ -26,9 +26,15 @@ graph TD
 
 ## 📊 Sơ Đồ Khối Hệ Thống (System Block Diagram)
 
-![System Block Diagram](system_block_diagram.png)
+```mermaid
+graph TD
+    A[Sensor Node: QMC5883L + ATmega328P] -->|nRF24L01+ RF| B[ESP32 Gateway: RFID + Buzzer + Relay Barrier]
+    B -->|Serial/COM| C[Python Desktop Application: GUI + Flask Server]
+    C --> D[Camera / OCR Module: License Plate Recognition]
+    C --> E[Local Payment Gateway: QR Code -> Web Confirmation]
+```
 
-Hình ảnh minh họa sơ đồ khối toàn hệ thống, minh họa các kết nối giữa cảm biến từ trường, vi điều khiển, module RF, ESP32 Gateway, và phần mềm Desktop Application.
+Sơ đồ khối minh họa các kết nối chính giữa cảm biến từ trường, vi điều khiển, module RF, ESP32 Gateway, và phần mềm Desktop Application.
 
 ---
 
