@@ -28,6 +28,12 @@ Hệ thống quản lý bãi đỗ xe thông minh tự động (Smart Parking & 
                  └── Local Payment Gateway (Mã QR LAN -> Web thanh toán xác nhận mở barrier)
 ```
 
+## 📊 Sơ Đồ Khối Hệ Thống (System Block Diagram)
+
+![Magnetometer-Based Smart Barrier Payment System](Magnetometer-Based Smart Barrier Payment System.png)
+
+Hình ảnh minh họa sơ đồ khối toàn hệ thống, minh họa các kết nối giữa cảm biến từ trường, vi điều khiển, module RF, ESP32 Gateway, và phần mềm Desktop Application.
+
 ---
 
 ## 🚀 Tính Năng Hệ Thống (Features)
