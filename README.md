@@ -16,16 +16,12 @@ Hệ thống quản lý bãi đỗ xe thông minh tự động (Smart Parking & 
 
 ## 🏗️ Kiến Trúc Hệ Thống (System Architecture)
 
-```
-[ Sensor Node (QMC5883L + ATmega328P) ] 
-                 │ (nRF24L01+ 2.4GHz RF)
-                 ▼
-[ ESP32 Gateway (RFID + Buzzer + Relay Barrier) ] 
-                 │ (UART / COM Port - USB Serial)
-                 ▼
-[ Python Desktop Application (Desktop GUI + Flask Local Server) ]
-                 ├── Camera / OCR Module (Nhận diện Biển Số)
-                 └── Local Payment Gateway (Mã QR LAN -> Web thanh toán xác nhận mở barrier)
+```mermaid
+graph TD
+    A[Sensor Node: QMC5883L + ATmega328P] --> B[ESP32 Gateway: RFID + Buzzer + Relay Barrier]
+    B --> C[Python Desktop Application: GUI + Flask Server]
+    C --> D[Camera / OCR Module: License Plate Recognition]
+    C --> E[Local Payment Gateway: QR Code -> Web Confirmation]
 ```
 
 ## 📊 Sơ Đồ Khối Hệ Thống (System Block Diagram)
