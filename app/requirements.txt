@@ -1,0 +1,5 @@
+pyserial>=3.5
+qrcode>=8.0
+pillow>=10.0
+flask>=2.0
+opencv-python>=4.5
